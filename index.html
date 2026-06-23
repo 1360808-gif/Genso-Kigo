@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>超爽快！小6理科クイズBATTLE 🐾</title>
+    <style>
+        :root {
+            --primary: #ff69b4;
+            --primary-dark: #db4393;
+            --correct-color: #2ecc71;
+            --incorrect-color: #e74c3c;
+            --bg-accent: #ffb6c1;
+            --main-bg: #ffe4e1;
+        }
+
+        /* 中学理科（かんたん全問正解）用のカラー */
+        .special-mode-active {
+            --primary: #9b59b6;
+            --primary-dark: #8e44ad;
+            --bg-accent: #d2b4de;
+            --main-bg: #ebdef0;
+        }
+
+        /* 高校理科（ゲキムズ全問正解）用のカラー（近未来・宇宙風） */
+        .high-school-mode-active {
+            --primary: #00cec9;
+            --primary-dark: #00b894;
+            --bg-accent: #81ecec;
+            --main-bg: #2d3436;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', sans-serif;
+            background-color: var(--main-bg);
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 60 60"><g fill="%23ffb6c1" fill-opacity="0.4"><circle cx="30" cy="35" r="10"/><circle cx="18" cy="20" r="5"/><circle cx="27" cy="14" r="5"/><circle cx="38" cy="14" r="5"/><circle cx="47" cy="20" r="5"/></g></svg>');
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            user-select: none;
+            transition: background-color 0.5s ease;
+        }
+
+        /* 高校モード時の文字色調整 */
+        .high-school-mode-active {
+            color: #f5f6fa;
+        }
+
+        .quiz-container {
+            background-color: rgba(255, 255, 255, 0.98);
+            border-radius: 24px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+            padding: 40px;
+            width: 100%;
+            max-width: 650px;
+            text-align: center;
+            border: 4px solid var(--bg-accent);
+            position: relative;
+            transition: transform 0.1s, background-color 0.3s, border-color 0.5s ease;
+            overflow: hidden;
+        }
+
+        .high-school-mode-active .quiz-container {
+            background-color: rgba(45, 52, 54, 0.95);
+            border-color: var(--primary);
+            box-shadow: 0 12px 40px rgba(0,206,201,0.3);
+        }
+
+        .flash-correct { background-color: #e8f8f0; animation: bounce 0.3s ease; }
+        .flash-incorrect { animation: shake 0.3s ease; border-color: var(--incorrect-color); }
+        .high-school-mode-active.flash-correct { background-color: #1e372a; }
+
+        h1 {
+            color: #d1617c;
+            margin-bottom: 20px;
+            font-size: 28px;
+            text-shadow: 1px 1px 0px #fff, 2px 2px 0px var(--bg-accent);
+        }
+        
+        .special-mode-active h1 { color: #6c3483; }
+        .high-school-mode-active h1 {
+            color: #00cec9;
+            text-shadow: 0 0 10px rgba(0,206,201,0.5);
+        }
+
+        .info-text {
+            font-size: 18px;
+            margin-bottom: 30px;
+            color: #666;
+            animation: pulse 1.5s infinite;
+        }
+        .high-school-mode-active .info-text { color: #b2bec3; }
+
+        .question {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 25px;
+            text-align: left;
+            line-height: 1.6;
+            background: #fffaf0;
+            padding: 15px;
+            border-radius: 12px;
+            border-left: 6px solid var(--primary);
+            color: #333;
+        }
+        .high-school-mode-active .question {
+            background: #353b48;
+            color: #f5f6fa;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+
+        .option-btn, .mode-btn {
+            background-color: #ffffff;
+            border: 2px solid #ffdadc;
+            border-bottom: 5px solid #ffdadc;
+            border-radius: 14px;
+            padding: 16px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.1s ease;
+            font-weight: bold;
+            position: relative;
+            color: #333;
+        }
+        .special-mode-active .option-btn { border-color: #ebdef0; border-bottom-color: #ebdef0; }
+        .high-school-mode-active .option-btn {
+            background-color: #2f3640;
+            border-color: #485460;
+            border-bottom-color: #1e272e;
+            color: #f5f6fa;
+        }
+        
+        .option-btn { text-align: left; padding-left: 50px; }
+
+        .option-btn::before {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--bg-accent);
+            color: white;
+            border-radius: 6px;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+        .high-school-mode-active .option-btn::before {
+            background: var(--primary);
+            color: #2d3436;
+        }
+
+        .option-btn:nth-child(1)::before { content: "1"; }
+        .option-btn:nth-child(2)::before { content: "2"; }
+        .option-btn:nth-child(3)::before { content: "3"; }
+        .option-btn:nth-child(4)::before { content: "4"; }
+
+        .option-btn:hover:not(:disabled), .mode-btn:hover {
+            transform: translateY(-2px);
+            border-bottom-width: 7px;
+            background-color: #fffaf0;
+        }
+        .high-school-mode-active .option-btn:hover:not(:disabled) {
+            background-color: #3d4452;
+        }
+        .option-btn:active:not(:disabled), .mode-btn:active {
+            transform: translateY(3px);
+            border-bottom-width: 2px;
+        }
+
+        .mode-container { display: flex; gap: 24px; justify-content: center; margin-top: 20px; }
+        .mode-btn { width: 180px; font-size: 20px; padding: 25px; }
+        .easy-btn { border-color: #87ceeb; border-bottom-color: #5dade2; color: #2e8b57; }
+        .easy-btn:hover { background-color: #f0f8ff; }
+        .hard-btn { border-color: #ff4500; border-bottom-color: #e59866; color: #d9383a; }
+        .hard-btn:hover { background-color: #fff5ee; }
+
+        .option-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        
+        .option-btn.btn-correct { background-color: #d4efdf !important; border-color: var(--correct-color) !important; border-bottom-color: #27ae60 !important; color: #196f3d !important; }
+        .option-btn.btn-incorrect { background-color: #f9e7e9 !important; border-color: var(--incorrect-color) !important; border-bottom-color: #922b21 !important; color: #78281f !important; }
+
+        #combo-text {
+            font-size: 24px;
+            color: #e67e22;
+            font-weight: bold;
+            height: 30px;
+            margin-bottom: 5px;
+            text-shadow: 1px 1px 0 #fff;
+        }
+
+        #life-container {
+            font-size: 20px;
+            font-weight: bold;
+            color: #ff4500;
+        }
+        .high-school-mode-active #life-container { color: #00cec9; }
+
+        .result {
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 15px;
+            min-height: 40px;
+            scale: 0;
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .result.show { scale: 1; }
+        .correct { color: var(--correct-color); }
+        .incorrect { color: var(--incorrect-color); }
+        
+        .next-btn, .restart-btn {
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 14px 35px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            box-shadow: 0 5px 0 var(--primary-dark);
+            transition: all 0.1s;
+        }
+        .next-btn { background-color: var(--primary); display: none; }
+        .next-btn:hover { background-color: #ff1493; }
+        .special-mode-active .next-btn:hover { background-color: #8e44ad; }
+        .high-school-mode-active .next-btn { background-color: #00cec9; color: #2d3436; box-shadow: 0 5px 0 #00b894; }
+        .high-school-mode-active .next-btn:hover { background-color: #00dec9; }
+        .next-btn:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--primary-dark); }
+        
+        .restart-btn { background-color: #ff6b6b; box-shadow: 0 5px 0 #c0392b; }
+        .restart-btn:hover { background-color: #ee5253; }
+        .restart-btn:active { transform: translateY(4px); box-shadow: 0 1px 0 #c0392b; }
+
+        .rank-badge {
+            font-size: 80px;
+            font-weight: 900;
+            color: #f1c40f;
+            text-shadow: 3px 3px 0px #333;
+            margin: 20px 0;
+            animation: popRank 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        .screen { display: none; }
+        .active-screen { display: block; }
+
+        @keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
+        @keyframes bounce { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.03); } }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-8px); } 40%, 80% { transform: translateX(8px); } }
+        @keyframes popRank { 0% { scale: 0; rotate: -20deg; } 100% { scale: 1; rotate: 0deg; } }
+    </style>
+</head>
+<body>
+
+<div class="quiz-container" id="main-container">
+    <div id="title-screen" class="screen active-screen" onclick="handleScreenClick()">
+        <h1 style="font-size: 36px;">小6理科クイズBATTLE 🐾</h1>
+        <p class="info-text">【画面クリック】または【スペース】で開始！</p>
+    </div>
+
+    <div id="mode-screen" class="screen">
+        <h1>モードを選択せよ！🐾</h1>
+        <div class="mode-container">
+            <button class="mode-btn easy-btn" onclick="startQuiz('easy')">かんたん💚<br>(3回ミスで終了)<br><span style="font-size:12px; font-weight:normal;">[Key: 1]</span></button>
+            <button class="mode-btn hard-btn" onclick="startQuiz('hard')">ゲキムズ☠️<br>(一撃終了!!)<br><span style="font-size:12px; font-weight:normal;">[Key: 2]</span></button>
+        </div>
+        <p style="margin-top: 25px; color: #888; font-size: 14px;">※画面タッチ、またはキーボードの1か2で選択</p>
+    </div>
+
+    <div id="quiz-screen" class="screen">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <h2 id="progress" style="margin: 0; color: var(--primary); font-size: 20px;">第 1 問</h2>
+            <div id="life-container"></div>
+            <div id="combo-text"></div>
+        </div>
+        <div class="question" id="question-text">問題文</div>
+        <div class="options" id="options-container"></div>
+        <div class="result" id="result-text"></div>
+        <button class="next-btn" id="next-button" onclick="handleNextProgress()">次へ進む (画面クリック / Space) 🐾</button>
+    </div>
+
+    <div id="score-screen" class="screen">
+        <h1 id="end-title">BATTLE FINISH!! 🐾</h1>
+        <div id="rank-area" class="rank-badge">A</div>
+        <p class="question" style="text-align: center; font-size: 22px;" id="final-score">0 / 10</p>
+        <p class="info-text" style="font-size: 16px; margin-bottom: 15px; color: #ff69b4;">【ボタン】または【スペース】でリタイトルへ</p>
+        <button class="restart-btn" onclick="goToModeSelect()">もう一度遊ぶ</button>
+    </div>
+</div>
+
+<script>
+    // かんたんモード（第1問〜第9問用の小6プール）
+    const easyQuizPool6 = [
+        { question: "植物が光合成を行うときに、空気中から取り入れる気体は何ですか？", options: ["酸素", "二酸化炭素", "窒素", "水素"], correct: 1 },
+        { question: "ものを燃やす働きがある気体は何ですか？", options: ["酸素", "二酸化炭素", "窒素", "水素"], correct: 0 },
+        { question: "私たちが吸い込んだ酸素は、体のどこの臓器で血液に取り込まれますか？", options: ["胃", "心臓", "肺", "肝臓"], correct: 2 },
+        { question: "口から食べた食べ物は、食道、胃を通ったあと、主にどこで栄養が吸収されますか？", options: ["大腸", "小腸", "肝臓", "心臓"], correct: 1 },
+        { question: "体中に血液を送り出すポンプの役割をしている臓器は何ですか？", options: ["肺", "胃", "腎臓", "心臓"], correct: 3 },
+        { question: "酸性の水溶液に鉄やアルミニウムを入れると、金属はどうなりますか？", options: ["溶ける", "固くなる", "色が変わるだけで溶けない", "磁石にくっつくようになる"], correct: 0 },
+        { question: "リトマス紙を使った実験で、青色リトマス紙を赤色に変える水溶液の性質は何性ですか？", options: ["酸性", "中性", "アルカリ性", "水溶性"], correct: 0 },
+        { question: "月の輝いている部分は、どこの光を反射しているからですか？", options: ["地球", "太陽", "月自身が光っている", "宇宙の星"], correct: 1 },
+        { question: "地層の中で、大昔の生物のきまった一部や足跡などが固まって残ったものを何といいますか？", options: ["化石", "鉱物", "溶岩", "地層のすきま"], correct: 0 },
+        { question: "手回し発電機などを使って、電気を蓄えておくことができる装置を何といいますか？", options: ["コンデンサー", "電熱線", "光電池", "発光ダイオード"], correct: 0 },
+        { question: "ものの燃え方：窒素にはものを燃やす働きがありますか？", options: ["ある", "ない"], correct: 1 },
+        { question: "ヒトの体：息を吐くとき、空気中のどの気体の割合が吸うときよりも増えていますか？", options: ["酸素", "二酸化炭素", "窒素", "水素"], correct: 1 },
+        { question: "水溶液：炭酸水には、何という気体が溶け込んでいますか？", options: ["酸素", "水素", "アンモニア", "二酸化炭素"], correct: 3 },
+        { question: "大地のつくり：川の水が岩を削ったり、土砂を運んだり、積もらせたりする一連の作用を何といいますか？", options: ["火山作用", "流れる水の作用", "地震作用", "地層作用"], correct: 1 },
+        { question: "生き物：植物を食べるバッタを、さらにカマキリが食べるような、生物どうしの「食べる・食べられる」の関係を何といいますか？", options: ["食物連鎖", "仲間はずれ", "生存競争", "協力関係"], correct: 0 }
+    ];
+
+    // ★ かんたんモードの第10問専用：中学1年生の理科問題プール（ここからランダムに1問が第10問目にセットされる）
+    const easyQuizPoolM1 = [
+        { question: "【中1理科】顕微鏡で観察するとき、はじめに合わせるべき正しいピントの調整方法はどれ？", options: ["接眼レンズをのぞきながら、対物レンズを遠ざけていく", "接眼レンズをのぞきながら、対物レンズを近づけていく", "横から見ながら、対物レンズとプレパラートをできるだけ遠ざける", "ステージを一番下に下げた状態から一気に上げる"], correct: 0 },
+        { question: "【中1理科】マツやスギのように、子房がなく、胚珠がむき出しになっている植物を何というか？", options: ["被子植物", "裸子植物", "コケ植物", "シダ植物"], correct: 1 },
+        { question: "【中1理科】光がガラスから空気中へ進むとき、入射角がある角度以上になると、光がすべて反射する現象を何というか？", options: ["乱反射", "屈折", "全反射", "全透過"], correct: 2 },
+        { question: "【中1理科】火山岩に見られる、細かい結晶やガラス質の中に、比較的大きな結晶が点在している組織を何というか？", options: ["等粒状組織", "斑状組織", "深成組織", "堆積組織"], correct: 1 }
+    ];
+
+    const hardQuizData = [
+        { question: "ものの燃え方：集気びんの中でろうそくを燃やし、火が消えた直後のびん内の空気の割合で、最も正しいものはどれ？", options: ["酸素が完全に0%になっている", "二酸化炭素の割合が最も多くなっている", "窒素の割合が最も多いままである", "酸素と二酸化炭素の割合が逆転している"], correct: 2 },
+        { question: "植物の体：植物の「気孔」について正しい説明はどれ？", options: ["光合成を行うために、夜だけ大きく開く", "根の先端に最も多く集まっている", "主に葉の裏側に多く、2つの保衛細胞に囲まれている", "酸素を取り入れる専用 of 穴で、二酸化炭素は通さない"], correct: 2 },
+        { question: "ヒトの体：小腸の壁にある、栄養を効率よく吸収するために表面積を広げる無数の小さな突起を何という？", options: ["絨毛（じゅうもう）", "べん毛", "繊毛（せんもう）", "胃腺"], correct: 0 },
+        { question: "ヒトの体：心臓から肺へ血液を送る血管（肺動脈）を流れている血液（静脈血）の特徴はどれ？", options: ["酸素がとても多く、鮮やかな赤色をしている", "二酸化炭素が多く、暗い赤色をしている", "栄養分が最も多く含まれている", "尿素などのゴミが全く含まれていない"], correct: 1 },
+        { question: "水溶液の性質：アルミ缶に水酸化ナトリウム水溶液（アルカリ性）を入れるとどうなる？", options: ["何も起きない", "アルミニウムが溶けて、水素が発生する", "アルミニウムが溶けて、二酸化炭素が発生する", "缶の表面に鉄が析出する"], correct: 1 },
+        { question: "水溶液の性質：塩酸に鉄を完全に溶かした液体を蒸発皿にとって熱し、水分を飛ばすと残るものは何？", options: ["元のピカピカした鉄の粒", "塩（食塩）", "鉄とは異なる、黄褐色（茶色）の物質", "何も残らない"], correct: 2 },
+        { question: "月と太陽：太陽・地球・月がこの順番で宇宙空間に一直線に並んだとき、地球から見える月の形（月齢）はどれ？", options: ["新月（まったく見えない）", "三日月", "上弦の月（半月）", "満月"], correct: 3 },
+        { question: "大地のつくり：火山灰の層が地層の中にあるとき、この層（鍵層）からわかる最も重要なことは何？", options: ["その場所が昔、深い海だったこと", "離れた場所にある地層が、同じ時代にできたということ", "当時の気温が非常に高かったこと", "恐竜が生息していた正確な年数"], correct: 1 },
+        { question: "電気の利用：同じ手回し発電機を使って「豆電球」と「発光ダイオード（LED）」を同じ時間だけ光らせるとき、よりたくさん手回し発電機を回す（手ごたえが重い）のはどっち？", options: ["豆電球", "発光ダイオード（LED）", "どちらも完全に同じ", "光の強さによって毎回変わる"], correct: 0 },
+        { question: "環境と生態系：水中の小さな生物（プランクトン）の食べる・食べられる関係（食物連鎖）のスタートとなる、自分で栄養を作る生物はどれ？", options: ["ミジンコ", "アミミドロ（植物プランクトン）", "ゾウリムシ", "ボウフラ"], correct: 1 }
+    ];
+
+    // 中学理科の特別問題プール（かんたん全問正解後の追加ステージ用）
+    const specialQuizPool = [
+        { question: "【中学理科】植物細胞にあり、動物細胞にはない、細胞のまわりを包む硬い仕切りを何という？", options: ["細胞膜", "細胞壁", "液胞", "核"], correct: 1 },
+        { question: "【中学理科】炭酸水素ナトリウムを加熱したときに、試験管の口付近についた液体が「水」であることを確かめる紙の名前は？", options: ["青色リトマス紙", "塩化コバルト紙", "pH試験紙", "ヨウ素デンプン紙"], correct: 1 },
+        { question: "【中学理科】電流の向きとは「逆向き」に回路を流れている、マイナスの電気を持った小さな粒を何という？", options: ["陽子", "中性子", "電子", "原子"], correct: 2 }
+    ];
+
+    // 高校理科の超特別問題プール（ゲキムズ全問正解後の追加ステージ用）
+    const highSchoolQuizPool = [
+        { question: "【高校理科】化学：pHが3の水溶液を水で10倍に薄めると、pHの値はいくつになりますか？", options: ["pH 2", "pH 4", "pH 13", "pH 0.3"], correct: 1 },
+        { question: "【高校理科】物理：物体の質量を2倍、速度を3倍にしたとき、その物体が持つ「運動エネルギー」は元の何倍になりますか？", options: ["5倍", "6倍", "12倍", "18倍"], correct: 3 },
+        { question: "【高校理科】生物：DNAの塩基配列において、アデニン（A）と常に結合する相補的な塩基は何ですか？", options: ["チミン (T)", "グアニン (G)", "シトシン (C)", "ウラシル (U)"], correct: 0 },
+        { question: "【高校理科】地学：地球の内部構造において、マントルと外核の境界に位置する不連続面の名前は何ですか？", options: ["モホロビチッチ不連続面", "グーテンベルク不連続面", "レーマン不連続面", "コンラッド不連続面"], correct: 1 }
+    ];
+
+    let currentQuestions = [];
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let combo = 0;
+    let isAnswered = false;
+    let currentScreenState = 'title';
+    let isHardMode = false;
+    let missCount = 0;
+    let gameOverFlag = false;
+    
+    let isSpecialStage = false; // 中学追加ステージ
+    let isHighSchoolStage = false; // 高校追加ステージ
+    let activeExtraQuestion = null;
+
+    const container = document.getElementById('main-container');
+    const titleScreen = document.getElementById('title-screen');
+    const modeScreen = document.getElementById('mode-screen');
+    const quizScreen = document.getElementById('quiz-screen');
+    const scoreScreen = document.getElementById('score-screen');
+
+    const progressEl = document.getElementById('progress');
+    const questionEl = document.getElementById('question-text');
+    const optionsContainer = document.getElementById('options-container');
+    const resultEl = document.getElementById('result-text');
+    const nextButton = document.getElementById('next-button');
+    const finalScoreEl = document.getElementById('final-score');
+    const comboEl = document.getElementById('combo-text');
+    const lifeContainer = document.getElementById('life-container');
+    const rankArea = document.getElementById('rank-area');
+    const endTitle = document.getElementById('end-title');
+
+    window.addEventListener('keydown', (e) => {
+        if (e.code === 'Space' || e.code === 'Enter') {
+            if (currentScreenState === 'title' && e.code === 'Space') {
+                e.preventDefault();
+                showScreen(modeScreen, 'mode');
+            } else if (currentScreenState === 'quiz' && isAnswered) {
+                e.preventDefault();
+                handleNextProgress();
+            } else if (currentScreenState === 'score' && e.code === 'Space') {
+                e.preventDefault();
+                goToModeSelect();
+            }
+        }
+        
+        if (currentScreenState === 'mode') {
+            if (e.key === '1') startQuiz('easy');
+            if (e.key === '2') startQuiz('hard');
+        }
+
+        if (currentScreenState === 'quiz' && !isAnswered) {
+            const num = parseInt(e.key);
+            if (num >= 1 && num <= 4) {
+                const buttons = optionsContainer.querySelectorAll('.option-btn');
+                if (buttons[num - 1]) {
+                    selectAnswer(num - 1);
+                }
+            }
+        }
+    });
+
+    function handleScreenClick() {
+        if (currentScreenState === 'title') {
+            showScreen(modeScreen, 'mode');
+        }
+    }
+
+    function handleNextProgress() {
+        if (gameOverFlag) {
+            endGame(); 
+        } else {
+            nextQuestion(); 
+        }
+    }
+
+    function showScreen(screenToShow, stateName) {
+        [titleScreen, modeScreen, quizScreen, scoreScreen].forEach(screen => {
+            screen.classList.remove('active-screen');
+        });
+        screenToShow.classList.add('active-screen');
+        currentScreenState = stateName;
+    }
+
+    function startQuiz(mode) {
+        currentQuestionIndex = 0;
+        score = 0;
+        combo = 0;
+        missCount = 0;
+        gameOverFlag = false;
+        isSpecialStage = false;
+        isHighSchoolStage = false;
+        isHardMode = (mode === 'hard');
+        comboEl.innerText = '';
+        
+        document.body.classList.remove('special-mode-active');
+        document.body.classList.remove('high-school-mode-active');
+        
+        if (isHardMode) {
+            const shuffled = [...hardQuizData].sort(() => Math.random() - 0.5);
+            currentQuestions = shuffled.slice(0, 10);
+        } else {
+            // かんたんモード構築：1〜9問目は小6プールからランダム
+            const shuffled6 = [...easyQuizPool6].sort(() => Math.random() - 0.5);
+            currentQuestions = shuffled6.slice(0, 9);
+            // ★第10問目に中1クイズプールからランダムで1問追加！
+            const randomM1 = easyQuizPoolM1[Math.floor(Math.random() * easyQuizPoolM1.length)];
+            currentQuestions.push(randomM1);
+        }
+
+        showScreen(quizScreen, 'quiz');
+        updateLifeDisplay();
+        loadQuiz();
+    }
+
+    function updateLifeDisplay() {
+        if (isHighSchoolStage) {
+            lifeContainer.innerText = "🚀 FUTURE STAGE (高校理科) 🚀";
+            return;
+        }
+        if (isSpecialStage) {
+            lifeContainer.innerText = "✨ BONUS STAGE (中学理科) ✨";
+            return;
+        }
+        if (isHardMode) {
+            lifeContainer.innerText = "❤️ 1つ (一撃死)";
+        } else {
+            let hearts = "";
+            for (let i = 0; i < 3 - missCount; i++) {
+                hearts += "❤️";
+            }
+            lifeContainer.innerText = `LIFE: ${hearts}`;
+        }
+    }
+
+    function loadQuiz() {
+        resetState();
+        
+        const currentQuiz = currentQuestions[currentQuestionIndex];
+        // 10問目が中1問題であることをわかりやすく表示
+        if (!isHardMode && currentQuestionIndex === 9) {
+            progressEl.innerText = `第 10 問 / 10 [中1レベル！]`;
+        } else {
+            progressEl.innerText = `第 ${currentQuestionIndex + 1} 問 / 10`;
+        }
+        questionEl.innerText = currentQuiz.question;
+
+        currentQuiz.options.forEach((option, index) => {
+            const button = document.createElement('button');
+            button.innerText = option;
+            button.classList.add('option-btn');
+            button.addEventListener('click', () => selectAnswer(index));
+            optionsContainer.appendChild(button);
+        });
+    }
+
+    // 中学ステージ
+    function loadSpecialQuiz() {
+        resetState();
+        isSpecialStage = true;
+        updateLifeDisplay();
+        document.body.classList.add('special-mode-active');
+        
+        const randomIndex = Math.floor(Math.random() * specialQuizPool.length);
+        activeExtraQuestion = specialQuizPool[randomIndex];
+        
+        progressEl.innerText = `🔥 特別問題 (中学理科) 🔥`;
+        questionEl.innerText = activeExtraQuestion.question;
+        createOptionButtons(activeExtraQuestion);
+    }
+
+    // 高校ステージ
+    function loadHighSchoolQuiz() {
+        resetState();
+        isHighSchoolStage = true;
+        updateLifeDisplay();
+        document.body.classList.add('high-school-mode-active');
+        
+        const randomIndex = Math.floor(Math.random() * highSchoolQuizPool.length);
+        activeExtraQuestion = highSchoolQuizPool[randomIndex];
+        
+        progressEl.innerText = `🚀 究極問題 (高校理科) 🚀`;
+        questionEl.innerText = activeExtraQuestion.question;
+        createOptionButtons(activeExtraQuestion);
+    }
+
+    function createOptionButtons(quizData) {
+        quizData.options.forEach((option, index) => {
+            const button = document.createElement('button');
+            button.innerText = option;
+            button.classList.add('option-btn');
+            button.addEventListener('click', () => selectAnswer(index));
+            optionsContainer.appendChild(button);
+        });
+    }
+
+    function resetState() {
+        isAnswered = false;
+        resultEl.innerText = '';
+        resultEl.className = 'result';
+        nextButton.style.display = 'none';
+        optionsContainer.innerHTML = '';
+        container.className = 'quiz-container';
+    }
+
+    function selectAnswer(selectedIndex) {
+        if (isAnswered) return;
+        isAnswered = true;
+        
+        const currentQuiz = (isSpecialStage || isHighSchoolStage) ? activeExtraQuestion : currentQuestions[currentQuestionIndex];
+        const buttons = optionsContainer.querySelectorAll('.option-btn');
+        
+        buttons.forEach(btn => btn.disabled = true);
+
+        if (selectedIndex === currentQuiz.correct) {
+            buttons[selectedIndex].classList.add('btn-correct');
+            container.classList.add('flash-correct');
+            score++;
+            combo++;
+            
+            if (isHighSchoolStage) {
+                resultEl.innerText = "🌌 異次元の知性！高校理科をも超越完了！ 🌌";
+            } else if (isSpecialStage) {
+                resultEl.innerText = "🌟 凄すぎる！中学理科クリア！ 🌟";
+            } else {
+                if (combo >= 2) {
+                    comboEl.innerText = `🔥 ${combo} COMBO!`;
+                    resultEl.innerText = `💥 PERFECT!! コンボ継続！ 💥`;
+                } else {
+                    comboEl.innerText = '';
+                    resultEl.innerText = "⭕ 正解！お見事！";
+                }
+            }
+            resultEl.classList.add('correct');
+            nextButton.innerText = "次へ進む (画面クリック / Space) 🐾";
+        } else {
+            buttons[selectedIndex].classList.add('btn-incorrect');
+            buttons[currentQuiz.correct].classList.add('btn-correct');
+            container.classList.add('flash-incorrect');
+            combo = 0;
+            comboEl.innerText = '';
+            
+            if (isHighSchoolStage) {
+                resultEl.innerText = `❌ 高校の壁は高すぎた！ (正解: ${currentQuiz.options[currentQuiz.correct]})`;
+                nextButton.innerText = "結果画面へ (画面クリック / Space) 🐾";
+                gameOverFlag = true;
+            } else if (isSpecialStage) {
+                resultEl.innerText = `❌ 中学の壁は高かった！ (正解: ${currentQuiz.options[currentQuiz.correct]})`;
+                nextButton.innerText = "結果画面へ (画面クリック / Space) 🐾";
+                gameOverFlag = true;
+            } else if (isHardMode) {
+                resultEl.innerText = `💀 ゲキムズ失敗！一撃ゲームオーバー！ (正解: ${currentQuiz.options[currentQuiz.correct]})`;
+                nextButton.innerText = "結果画面へ (画面クリック / Space) 🐾";
+                gameOverFlag = true;
+            } else {
+                missCount++;
+                updateLifeDisplay();
+                if (missCount >= 3) {
+                    resultEl.innerText = `❌ 3回ミス！ゲームオーバー！ (正解: ${currentQuiz.options[currentQuiz.correct]})`;
+                    nextButton.innerText = "結果画面へ (画面クリック / Space) 🐾";
+                    gameOverFlag = true;
+                } else {
+                    resultEl.innerText = `❌ 不正解... (正解: ${currentQuiz.options[currentQuiz.correct]})`;
+                    nextButton.innerText = "次へ進む (画面クリック / Space) 🐾";
+                }
+            }
+            resultEl.classList.add('incorrect');
+        }
+
+        resultEl.classList.add('show');
+        nextButton.style.display = 'inline-block';
+        nextButton.focus();
+    }
+
+    function nextQuestion() {
+        if (isSpecialStage || isHighSchoolStage) {
+            endGame();
+            return;
+        }
+
+        currentQuestionIndex++;
+        
+        if (currentQuestionIndex < currentQuestions.length) {
+            loadQuiz();
+        } else {
+            if (score === 10) {
+                if (isHardMode) {
+                    loadHighSchoolQuiz(); // ゲキムズ全問正解は高校問題へ
+                } else {
+                    loadSpecialQuiz(); // かんたん全問正解は中学問題へ
+                }
+            } else {
+                endGame();
+            }
+        }
+    }
+
+    function endGame() {
+        showScreen(scoreScreen, 'score');
+        
+        if (gameOverFlag) {
+            endTitle.innerText = "☠️ GAME OVER... ☠️";
+            endTitle.style.color = "var(--incorrect-color)";
+            if (isHighSchoolStage) {
+                finalScoreEl.innerText = `高校理科で敗北！でもゲキムズ10連勝は天才の証！（正解数: 10）`;
+            } else if (isSpecialStage) {
+                finalScoreEl.innerText = `中学追加問題で敗北！でも基本の10問は突破！（正解数: 10）`;
+            } else if (isHardMode) {
+                finalScoreEl.innerText = `ゲキムズの壁は高かった！ ${currentQuestionIndex + 1}問目で脱落（正解数: ${score}）`;
+            } else {
+                finalScoreEl.innerText = `3回ミスして脱落！ ${currentQuestionIndex + 1}問目でゲームオーバー（正解数: ${score}）`;
+            }
+        } else {
+            endTitle.innerText = "🎉 BATTLE FINISH!! 🎉";
+            if (isHighSchoolStage && score === 11) {
+                endTitle.innerText = "👑 LEGENDARY FINISH 👑";
+                endTitle.style.color = "#00cec9";
+                finalScoreEl.innerText = `全人類の頂点！高校理科まで完全制破！（11 / 11問全問正解）`;
+            } else if (isSpecialStage && score === 11) {
+                endTitle.style.color = "#9b59b6";
+                finalScoreEl.innerText = `お見事！中学理科ステージまで突破完了！（11 / 11問全問正解）`;
+            } else {
+                endTitle.style.color = "#d1617c";
+                finalScoreEl.innerText = `SCORE: ${score} / 10 問正解！`;
+            }
+        }
+        
+        // ランク判定
+        let rank = 'D';
+        if (isHighSchoolStage && score === 11) rank = 'OMEGA'; 
+        else if (isSpecialStage && score === 11) rank = 'GOD'; 
+        else if (score === 10) rank = 'SS'; 
+        else if (score >= 8) rank = 'S';
+        else if (score >= 6) rank = 'A';
+        else if (score >= 4) rank = 'B';
+        else if (score >= 2) rank = 'C';
+        
+        rankArea.innerText = rank;
+        if (rank === 'OMEGA') {
+            rankArea.innerText = "🌌OMEGA";
+            rankArea.style.fontSize = "50px";
+            rankArea.style.color = "#00cec9";
+        } else if (rank === 'GOD') {
+            rankArea.innerText = "👑GOD";
+            rankArea.style.fontSize = "60px";
+            rankArea.style.color = "#ffd700";
+        } else if (rank === 'SS' || rank === 'S') {
+            rankArea.style.fontSize = "80px";
+            rankArea.style.color = '#f1c40f';
+        } else if (rank === 'A') {
+            rankArea.style.fontSize = "80px";
+            rankArea.style.color = '#e74c3c';
+        } else if (rank === 'B') {
+            rankArea.style.fontSize = "80px";
+            rankArea.style.color = '#3498db';
+        } else {
+            rankArea.style.fontSize = "80px";
+            rankArea.style.color = '#95a5a6';
+        }
+    }
+
+    function goToModeSelect() {
+        document.body.classList.remove('special-mode-active');
+        document.body.classList.remove('high-school-mode-active');
+        showScreen(modeScreen, 'mode');
+    }
+</script>
+
+</body>
+</html>
+
